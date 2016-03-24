@@ -9,9 +9,6 @@ import javax.swing.JOptionPane;
 
 public class RedesController {
 
-	public RedesController() {
-		super();
-	}
 
 	public String so() {
 		String so = System.getProperty("os.name");
@@ -20,23 +17,23 @@ public class RedesController {
 
 	public String ip(String so) {
 		String comando = "";
-		if ( so.contains("Windows") )
+		if (so.contains("Windows"))
 			comando = "ipconfig";
-		
-		if ( so.contains("Linux"))
+
+		if (so.contains("Linux"))
 			comando = "ifconfig";
-		
+
 		StringBuffer escritor = new StringBuffer();
-		
+
 		try {
 			Process p = Runtime.getRuntime().exec(comando);
 			InputStream fluxo = p.getInputStream();
 			InputStreamReader leitor = new InputStreamReader(fluxo);
 			BufferedReader buffer = new BufferedReader(leitor);
 			String linha = buffer.readLine();
-			
-			escritor.append("Configurações de ip: \n");
-			while ( linha != null ) {
+
+			escritor.append("ConfiguraÃ§oes de ip: \n");
+			while (linha != null) {
 				if (linha.contains("Ethernet")) {
 					escritor.append(linha + "\n");
 				}
@@ -45,54 +42,60 @@ public class RedesController {
 				}
 				linha = buffer.readLine();
 			}
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-			
-			
+
 		return escritor.toString();
 	}
-	
-	public String ping(String caminho, String so){
-		
+
+	public String ping(String caminho, String so) {
+
 		String comando = "";
-		
+
 		if (so.contains("Windows"))
 			comando = "ping /n 10 " + caminho;
-		
+
 		if (so.contains("Linux"))
 			comando = "ping -c 10 " + caminho;
-		
+
 		StringBuffer escritor = new StringBuffer();
 		String vetor[] = new String[4];
-		int ping = 0;
-		
+		double ping = 0;
+
 		try {
 			Process p = Runtime.getRuntime().exec(comando);
 			InputStream fluxo = p.getInputStream();
 			InputStreamReader leitor = new InputStreamReader(fluxo);
 			BufferedReader buffer = new BufferedReader(leitor);
 			String linha = buffer.readLine();
+
 			
-			while ( linha != null) {
-				if (linha.contains("tempo")) {
-					escritor.append(linha +"\n");
+			int linux = 0;
+			while (linha != null) {
+				if (linha.contains("tempo") || linha.contains("time")){
+					escritor.append(linha + "\n");
 					vetor = linha.split("=");
-					ping = ping + Integer.parseInt(vetor[2].substring(0, vetor[2].lastIndexOf("m")));
+					//System.out.println(vetor[1]);
+					if (so.contains("Windows"))
+						ping = ping + Integer.parseInt(vetor[2].substring(0, vetor[2].lastIndexOf("m")));
+					if (so.contains("Linux")) {
+						if (linux < 10)
+							ping = ping + Double.parseDouble(vetor[3].substring(0, vetor[3].lastIndexOf(" m")));
+						linux++;
+					}
 				}
 				linha = buffer.readLine();
 			}
 			ping /= 10;
-			escritor.append("Tempo médio de ping para " + caminho + " :\n" + ping +"ms");
-			
+			escritor.append("Tempo mÃ©dio de ping para " + caminho + " :\n" + ping + "ms");
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return escritor.toString();
 	}
-	
-	
+
 }
